@@ -2,9 +2,11 @@
 
  USE mydb;
 
- CREATE TABLE services (
-   id INT NOT NULL AUTO_INCREMENT,
-   name VARCHAR(255) NOT NULL,
-   description VARCHAR(255),
-   PRIMARY KEY (id)
- );
+
+ CREATE TABLE books (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    naziv VARCHAR(255) NOT NULL,
+    autor VARCHAR(255) NOT NULL,
+    zanr VARCHAR(255) NOT NULL
+    ) ;
+
