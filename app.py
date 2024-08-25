@@ -5,48 +5,58 @@ app = Flask(__name__)
 
 # MySQL database configuration
 db = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  password="",
-  database="mydb"
+    host="localhost",
+    user="root",
+    password="Netflix.2024!",
+    database="mydb"
 )
 
-@app.route('/services', methods=['GET'])
-def get_services():
+@app.route('/books', methods=['GET'])
+def get_books():
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM services")
+    cursor.execute("SELECT id, naziv, autor, zanr FROM books")
     rows = cursor.fetchall()
-    services = []
+    books = []
     for row in rows:
-        service = {
+        book = {
             'id': row[0],
-            'name': row[1],
-            'description': row[2]
+            'naziv': row[1],
+            'autor': row[2],
+            'zanr': row[3]
         }
-        services.append(service)
-    return jsonify(services)
+        books.append(book)
+    return jsonify(books)
 
-@app.route('/services', methods=['POST'])
-def add_service():
-    name = request.json['name']
-    description = request.json.get('description', '')
+@app.route('/books', methods=['POST'])
+def add_book():
+    data = request.json
+    naziv = data.get('naziv')
+    autor = data.get('autor')
+    zanr = data.get('zanr')
+    
+    if not naziv or not autor or not zanr:
+        return jsonify({'error': 'Nedostaju podaci'}), 400
+    
     cursor = db.cursor()
-    sql = "INSERT INTO services (name, description) VALUES (%s, %s)"
-    values = (name, description)
+    sql = "INSERT INTO books (naziv, autor, zanr) VALUES (%s, %s, %s)"
+    values = (naziv, autor, zanr)
     cursor.execute(sql, values)
     db.commit()
-    service_id = cursor.lastrowid
-    return jsonify({'id': service_id, 'name': name, 'description': description})
+    book_id = cursor.lastrowid
+    return jsonify({'id': book_id, 'naziv': naziv, 'autor': autor, 'zanr': zanr}), 201
 
-@app.route('/services/<int:service_id>', methods=['DELETE'])
-def delete_service(service_id):
+@app.route('/books/<int:book_id>', methods=['DELETE'])
+def delete_book(book_id):
     cursor = db.cursor()
-    sql = "DELETE FROM services WHERE id = %s"
-    values = (service_id,)
+    sql = "DELETE FROM books WHERE id = %s"
+    values = (book_id,)
     cursor.execute(sql, values)
     db.commit()
-    return jsonify({'message': 'Service deleted'})
+    
+    if cursor.rowcount == 0:
+        return jsonify({'error': 'Knjiga nije pronađena'}), 404
+    
+    return jsonify({'message': 'Knjiga obrisana'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
-
